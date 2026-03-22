@@ -167,9 +167,16 @@ const Dashboard = () => {
         <div className="mb-5">
           <h2 className="text-xs font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Tratamente active</h2>
           <div className="space-y-3">
-            {activeTreatments.map(treatment => (
-              <DoseCard key={treatment.id} treatment={treatment} />
-            ))}
+            {activeTreatments.map(treatment => {
+              const log = pendingLogs.find(l => l.treatmentId === treatment.id) || completedLogs.find(l => l.treatmentId === treatment.id);
+              return log ? (
+                <DoseCard
+                  key={treatment.id}
+                  treatment={treatment}
+                  log={log}
+                />
+              ) : null;
+            })}
           </div>
         </div>
       )}
