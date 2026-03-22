@@ -5,6 +5,7 @@ import { useApp } from '@/context/AppContext';
 import DoseCard from '@/components/DoseCard';
 import { Leaf, TrendingUp, AlertTriangle, ShoppingCart, Clock, Plus, Pill } from 'lucide-react';
 import { zenythProducts } from '@/data/zenythProducts';
+import { Treatment } from '@/types/treatment';
 
 const Dashboard = () => {
   const { treatments, intakeLogs } = useApp();
@@ -36,6 +37,11 @@ const Dashboard = () => {
     zenythProducts.filter(p => p.daysRemaining <= 10),
     []
   );
+
+  const activeTreatments = treatments.filter(t => {
+    const now = new Date().toISOString();
+    return (!t.startDate || t.startDate <= now) && (!t.endDate || t.endDate >= now);
+  });
 
   return (
     <div className="pb-24 px-4 pt-4 max-w-lg mx-auto">
@@ -152,6 +158,18 @@ const Dashboard = () => {
               const treatment = treatments.find(t => t.id === log.treatmentId);
               return treatment ? <DoseCard key={log.id} treatment={treatment} log={log} /> : null;
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Active Treatments */}
+      {activeTreatments.length > 0 && (
+        <div className="mb-5">
+          <h2 className="text-xs font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Tratamente active</h2>
+          <div className="space-y-3">
+            {activeTreatments.map(treatment => (
+              <DoseCard key={treatment.id} treatment={treatment} />
+            ))}
           </div>
         </div>
       )}
