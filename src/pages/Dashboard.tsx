@@ -6,9 +6,11 @@ import DoseCard from '@/components/DoseCard';
 import { Leaf, TrendingUp, AlertTriangle, ShoppingCart, Clock, Plus, Pill } from 'lucide-react';
 import { zenythProducts } from '@/data/zenythProducts';
 import { Treatment } from '@/types/treatment';
+import { Button } from '@/components/ui/button';
+import type { IntakeLog } from '@/types/treatment';
 
 const Dashboard = () => {
-  const { treatments, intakeLogs } = useApp();
+  const { treatments, intakeLogs, updateIntakeStatus, refresh } = useApp();
   const navigate = useNavigate();
   const today = '2026-03-19';
 
@@ -42,6 +44,15 @@ const Dashboard = () => {
     const now = new Date().toISOString();
     return (!t.startDate || t.startDate <= now) && (!t.endDate || t.endDate >= now);
   });
+
+  const handleUpdateStatus = async (logId: string, status: IntakeLog['status']) => {
+    try {
+      await updateIntakeStatus(logId, status);
+      await refresh();
+    } catch (error) {
+      console.error('Error updating intake status:', error);
+    }
+  };
 
   return (
     <div className="pb-24 px-4 pt-4 max-w-lg mx-auto">
@@ -170,11 +181,13 @@ const Dashboard = () => {
             {activeTreatments.map(treatment => {
               const log = pendingLogs.find(l => l.treatmentId === treatment.id) || completedLogs.find(l => l.treatmentId === treatment.id);
               return log ? (
-                <DoseCard
-                  key={treatment.id}
-                  treatment={treatment}
-                  log={log}
-                />
+                <div key={treatment.id} className="space-y-3">
+                  <DoseCard treatment={treatment} log={log} />
+                  <div className="flex gap-2 mt-2">
+                    <Button onClick={() => handleUpdateStatus(log.id, 'taken')} variant="default">Marchează ca luat</Button>
+                    <Button onClick={() => handleUpdateStatus(log.id, 'skipped')} variant="destructive">Omite</Button>
+                  </div>
+                </div>
               ) : null;
             })}
           </div>
